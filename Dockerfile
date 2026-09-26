@@ -1,8 +1,7 @@
 ARG PHP_VERSION=8.4
 
-FROM php:${PHP_VERSION}-fpm-trixie
+FROM php:${PHP_VERSION}-fpm-bookworm
 
-ARG GITHUB_TOKEN
 ARG WITH_XDEBUG=false
 
 RUN apt-get update -o Acquire::Retries=5 \
@@ -37,7 +36,10 @@ COPY ./.docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./.docker/.gitconfig /root/.gitconfig
 WORKDIR /app
 RUN chmod +x /app/bin/console
-RUN if [ -n "$GITHUB_TOKEN" ]; then composer config --global github-oauth.github.com ${GITHUB_TOKEN}; fi
+RUN --mount=type=secret,id=github_token \
+    if [ -s /run/secrets/github_token ]; then \
+        composer config --global github-oauth.github.com "$(cat /run/secrets/github_token)"; \
+    fi
 RUN composer check-platform-reqs
 RUN composer validate --strict
 RUN composer install --no-dev --no-scripts --prefer-dist
