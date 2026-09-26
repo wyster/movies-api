@@ -5,12 +5,10 @@ FROM php:${PHP_VERSION}-fpm-trixie
 ARG GITHUB_TOKEN
 ARG WITH_XDEBUG=false
 
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends \
-        git zip supervisor cron
-
-# intl
-RUN apt-get install -y zlib1g-dev libicu-dev g++
+RUN apt-get update -o Acquire::Retries=5 \
+    && apt-get install -y --no-install-recommends \
+        git zip supervisor cron zlib1g-dev libicu-dev g++ \
+    && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-configure intl
 
 # Other extension
