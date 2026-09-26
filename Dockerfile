@@ -5,7 +5,10 @@ FROM php:${PHP_VERSION}-fpm
 ARG GITHUB_TOKEN
 ARG WITH_XDEBUG=false
 
-RUN apt-get update && apt-get install -y git zip supervisor cron procps
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git zip supervisor cron procps \
+    && rm -rf /var/lib/apt/lists/*
 
 # intl
 RUN apt-get install -y zlib1g-dev libicu-dev g++
