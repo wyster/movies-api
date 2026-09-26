@@ -1,21 +1,20 @@
 ARG PHP_VERSION=8.4
 
-FROM php:${PHP_VERSION}-fpm
+FROM php:${PHP_VERSION}-fpm-trixie
 
 ARG GITHUB_TOKEN
 ARG WITH_XDEBUG=false
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
-        git zip supervisor cron \
-    && rm -rf /var/lib/apt/lists/*
+        git zip supervisor cron
 
 # intl
 RUN apt-get install -y zlib1g-dev libicu-dev g++
 RUN docker-php-ext-configure intl
 
 # Other extension
-RUN docker-php-ext-install iconv pdo pdo_mysql bcmath
+RUN docker-php-ext-install iconv intl pdo pdo_mysql bcmath
 
 # Xdebug
 RUN pecl install xdebug
