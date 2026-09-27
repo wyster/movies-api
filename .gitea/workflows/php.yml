@@ -67,26 +67,12 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v7
 
-            -   name: Setup QEMU
-                uses: docker/setup-qemu-action@v4
-
-            -   name: Cache Docker layers
-                uses: actions/cache@v5
-                with:
-                    path: /tmp/.buildx-cache
-                    key: ${{ runner.os }}-buildx-${{ gitea.sha }}
-                    restore-keys: |
-                        ${{ runner.os }}-buildx-
-
             -   name: Set up Buildx
                 uses: docker/setup-buildx-action@v3
 
-            -   name: Publish tagged image
-                uses: docker/build-push-action@v7
+            -   uses: docker/build-push-action@v7
                 with:
                     context: .
-                    push: true
+                    cache-from: type=gha
+                    cache-to: type=gha,mode=max
                     platforms: linux/arm64
-                    cache-from: type=local,src=/tmp/.buildx-cache
-                    cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
-                    tags: ${{ secrets.REGISTRY_HOST }}/${{ gitea.repository }}:latest
