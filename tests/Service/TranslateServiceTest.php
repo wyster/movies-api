@@ -20,7 +20,7 @@ final class TranslateServiceTest extends TestCase
             self::fail('The translation API should not be called.');
         });
 
-        self::assertSame($text, (new TranslateService($httpClient, $apiKey))->translate($text));
+        static::assertSame($text, (new TranslateService($httpClient, $apiKey))->translate($text));
     }
 
     /**
@@ -44,11 +44,11 @@ final class TranslateServiceTest extends TestCase
             return new MockResponse('{"data":{"translations":[{"translatedText":"Привіт світе"}]}}');
         });
 
-        self::assertSame('Привіт світе', (new TranslateService($httpClient, 'api-key'))->translate('Hello world'));
-        self::assertSame('POST', $request[0]);
-        self::assertSame('https://translation.googleapis.com/language/translate/v2?key=api-key', $request[1]);
-        self::assertSame(['key' => 'api-key'], $request[2]['query']);
-        self::assertSame([
+        static::assertSame('Привіт світе', (new TranslateService($httpClient, 'api-key'))->translate('Hello world'));
+        static::assertSame('POST', $request[0]);
+        static::assertSame('https://translation.googleapis.com/language/translate/v2?key=api-key', $request[1]);
+        static::assertSame(['key' => 'api-key'], $request[2]['query']);
+        static::assertSame([
             'q' => 'Hello world',
             'target' => 'uk',
             'format' => 'text',
@@ -60,7 +60,7 @@ final class TranslateServiceTest extends TestCase
     {
         $httpClient = new MockHttpClient($response);
 
-        self::assertSame('Hello', (new TranslateService($httpClient, 'api-key'))->translate('Hello'));
+        static::assertSame('Hello', (new TranslateService($httpClient, 'api-key'))->translate('Hello'));
     }
 
     /**

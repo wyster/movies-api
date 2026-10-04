@@ -7,6 +7,7 @@ namespace App\Service;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 use function Sentry\captureException;
 
 final class TranslateService
@@ -39,6 +40,7 @@ final class TranslateService
             return html_entity_decode((string) ($data['data']['translations'][0]['translatedText'] ?? $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         } catch (\Throwable $e) {
             captureException($e);
+
             return $text;
         }
     }

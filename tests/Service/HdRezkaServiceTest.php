@@ -26,6 +26,7 @@ class HdRezkaServiceTest extends KernelTestCase
         return new HdRezkaService(
             $this->httpClient,
             new NullAdapter(),
+            hdrezkaUrl: 'http://localhost'
         );
     }
 

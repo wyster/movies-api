@@ -33,7 +33,7 @@ class HdRezkaService
         #[Autowire(env: 'HDREZKA_COOKIES')]
         private readonly ?string $cookies = null,
         #[Autowire(env: 'HDREZKA_URL')]
-        private readonly string $hdrezkaUrl
+        private readonly string $hdrezkaUrl,
     ) {
         $options = [
             'base_uri' => $this->hdrezkaUrl,
