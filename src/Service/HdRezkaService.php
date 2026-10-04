@@ -32,9 +32,11 @@ class HdRezkaService
         private readonly ?string $proxy = null,
         #[Autowire(env: 'HDREZKA_COOKIES')]
         private readonly ?string $cookies = null,
+        #[Autowire(env: 'HDREZKA_URL')]
+        private readonly string $hdrezkaUrl
     ) {
         $options = [
-            'base_uri' => 'https://rezka.ag',
+            'base_uri' => $this->hdrezkaUrl,
             'timeout' => 10,
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
