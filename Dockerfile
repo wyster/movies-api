@@ -1,17 +1,17 @@
 ARG PHP_VERSION=8.4
 
-FROM php:${PHP_VERSION}-fpm-bookworm
+FROM php:${PHP_VERSION}-fpm
 
 ARG WITH_XDEBUG=false
 
-RUN apt-get update -o Acquire::Retries=5 \
-    && apt-get install -y --no-install-recommends \
-        git zip supervisor cron zlib1g-dev libicu-dev g++ \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git zip supervisor cron procps
+
+# intl
+RUN apt-get install -y zlib1g-dev libicu-dev g++
 RUN docker-php-ext-configure intl
 
 # Other extension
-RUN docker-php-ext-install iconv intl pdo pdo_mysql bcmath
+RUN docker-php-ext-install iconv pdo pdo_mysql bcmath
 
 # Xdebug
 RUN pecl install xdebug
