@@ -189,7 +189,7 @@ class HdRezkaService
             $translators,
             $cover,
             $description,
-            $dom->filter('.b-post__origtitle')->text(),
+            $dom->filter('.b-post__origtitle')->count() > 0 ? $dom->filter('.b-post__origtitle')->text() : null,
             $year,
         );
     }

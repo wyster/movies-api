@@ -22,7 +22,7 @@ class DetailsDto
         public readonly array $translators,
         public readonly ?string $poster,
         public readonly string $description,
-        public readonly string $originalName,
+        public readonly ?string $originalName,
         public readonly ?int $year = null,
     ) {}
 }
