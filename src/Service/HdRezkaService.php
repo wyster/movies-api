@@ -29,11 +29,11 @@ class HdRezkaService
     public function __construct(
         HttpClientInterface $httpClient,
         private readonly CacheInterface $cache,
+        #[Autowire(env: 'HDREZKA_URL')]
+        private readonly string $hdrezkaUrl,
         private readonly ?string $proxy = null,
         #[Autowire(env: 'HDREZKA_COOKIES')]
         private readonly ?string $cookies = null,
-        #[Autowire(env: 'HDREZKA_URL')]
-        private readonly string $hdrezkaUrl,
     ) {
         $options = [
             'base_uri' => $this->hdrezkaUrl,
@@ -132,6 +132,7 @@ class HdRezkaService
                     $translators[] = new TranslationDto(
                         (int) $item->attr('data-translator_id'),
                         $text,
+                        (bool) $item->attr('data-director'),
                     );
                 });
             }

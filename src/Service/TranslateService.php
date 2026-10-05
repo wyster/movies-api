@@ -37,7 +37,7 @@ final class TranslateService
             /** @var array{data?: array{translations?: array<int, array{translatedText?: string}>}} $data */
             $data = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
 
-            return html_entity_decode((string) ($data['data']['translations'][0]['translatedText'] ?? $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            return html_entity_decode($data['data']['translations'][0]['translatedText'] ?? $text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         } catch (\Throwable $e) {
             captureException($e);
 

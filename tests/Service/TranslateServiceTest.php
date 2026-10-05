@@ -47,7 +47,8 @@ final class TranslateServiceTest extends TestCase
         static::assertSame('Привіт світе', (new TranslateService($httpClient, 'api-key'))->translate('Hello world'));
         static::assertSame('POST', $request[0]);
         static::assertSame('https://translation.googleapis.com/language/translate/v2?key=api-key', $request[1]);
-        static::assertSame(['key' => 'api-key'], $request[2]['query']);
+        static::assertSame(['key' => 'api-key'], $request[2]['query'] ?? []);
+        static::assertIsString($request[2]['body']);
         static::assertSame([
             'q' => 'Hello world',
             'target' => 'uk',

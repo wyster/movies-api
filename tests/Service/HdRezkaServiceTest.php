@@ -133,7 +133,7 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertSame(1990, $result->year);
     }
 
-    public function testMovieDetailsSuccess3(): void
+    public function testMovieDetailsSuccess2(): void
     {
         $this->httpClient->setResponseFactory([
             new MockResponse((string) file_get_contents(__DIR__ . '/fixtures/movie_details_success2.html')),
@@ -145,5 +145,15 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertSame('https://static.hdrezka.ac/i/2026/3/13/k86eb2a4fd89bik31b12p.jpg', $result->poster);
         static::assertSame('История борьбы Миранды Пристли с Эмили Чарлтон, ее бывшей помощницей, ставшей соперницей-исполнительным директором, поскольку они конкурируют за доходы от рекламы в условиях упадка печатных СМИ, в то время как Миранда близится к выходу на пенсию.', $result->description);
         static::assertSame(2026, $result->year);
+    }
+
+    public function testMovieDetailsSuccess3(): void
+    {
+        $this->httpClient->setResponseFactory([
+            new MockResponse((string) file_get_contents(__DIR__ . '/fixtures/movie_details_success3.html')),
+        ]);
+        $result = $this->createHdRezkaService()->getDetails(5266);
+        static::assertCount(7, $result->translators);
+        static::assertTrue($result->translators[1]->isDirector);
     }
 }
