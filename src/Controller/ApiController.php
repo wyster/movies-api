@@ -35,8 +35,10 @@ class ApiController extends AbstractController
         #[MapQueryParameter(name: 'translator_id')]
         int $translatorId,
         HdRezkaService $hdRezkaService,
+        #[MapQueryParameter]
+        bool $director = false,
     ): JsonResponse {
-        return $this->json($hdRezkaService->getMoviePlayer($id, $translatorId));
+        return $this->json($hdRezkaService->getMoviePlayer($id, $translatorId, $director));
     }
 
     #[OA\Response(

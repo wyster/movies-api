@@ -47,13 +47,14 @@ class HdRezkaService
         $this->httpClient = new RetryableHttpClient($httpClient->withOptions($options), $strategy);
     }
 
-    public function getMoviePlayer(int $id, int $translatorId): MoviePlayerDto
+    public function getMoviePlayer(int $id, int $translatorId, bool $isDirector): MoviePlayerDto
     {
         $options = [
             'body' => [
                 'id' => $id,
                 'translator_id' => $translatorId,
                 'action' => 'get_movie',
+                'is_director' => $isDirector ? 1 : 0,
             ],
         ];
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time() - 1, $options);
