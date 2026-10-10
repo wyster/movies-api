@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'API')]
 class ApiController extends AbstractController
 {
     #[OA\Response(
