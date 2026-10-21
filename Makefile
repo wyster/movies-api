@@ -41,6 +41,8 @@ publish-docker-image: ## Build and publish the Docker image
 	printf '%s' "$$REGISTRY_TOKEN" | docker login "$(REGISTRY_HOST)" --username "$$REGISTRY_USERNAME" --password-stdin
 	docker buildx build \
 		--platform linux/arm64 \
+		--cache-from type=registry,ref="$(REGISTRY_HOST)/$(REGISTRY_REPOSITORY):buildcache" \
+		--cache-to type=registry,ref="$(REGISTRY_HOST)/$(REGISTRY_REPOSITORY):buildcache",mode=max \
 		--push \
 		--tag "$(REGISTRY_HOST)/$(REGISTRY_REPOSITORY):latest" \
 		.
