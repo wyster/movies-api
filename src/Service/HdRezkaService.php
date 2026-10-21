@@ -141,7 +141,7 @@ class HdRezkaService
             /** @var array<int, string> $matches */
             $matches = [];
             preg_match(sprintf('/initCDNSeriesEvents\(%s, ([0-9]+),/i', $id), $content, $matches);
-            if ((bool) ($matches[1] ?? null)) {
+            if (($matches[1] ?? null) !== null) {
                 $translators[] = new TranslationDto(
                     (int) $matches[1],
                     'Default',

@@ -156,4 +156,14 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertCount(7, $result->translators);
         static::assertTrue($result->translators[1]->isDirector);
     }
+
+    public function testMovieDetailsSuccess4(): void
+    {
+        $this->httpClient->setResponseFactory([
+            new MockResponse((string) file_get_contents(__DIR__ . '/fixtures/movie_details_success4.html')),
+        ]);
+        $result = $this->createHdRezkaService()->getDetails(19149);
+        static::assertCount(1, $result->translators);
+        static::assertSame(0, $result->translators[0]->id);
+    }
 }
