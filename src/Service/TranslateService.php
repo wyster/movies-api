@@ -6,6 +6,8 @@ namespace App\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 use function Sentry\captureException;
@@ -14,6 +16,7 @@ final class TranslateService
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
+        private readonly CacheInterface $cache,
         #[Autowire(env: 'GOOGLE_TRANSLATE_API_KEY')]
         private readonly ?string $apiKey = null,
     ) {}
@@ -24,6 +27,15 @@ final class TranslateService
             return $text;
         }
 
+        $cacheKey = 'translation_uk' . hash('sha256', $text);
+
+        return $this->cache->get($cacheKey, function () use ($text): string {
+            return $this->translateWithoutCache($text);
+        });
+    }
+
+    private function translateWithoutCache(string $text): string
+    {
         try {
             $response = $this->httpClient->request(Request::METHOD_POST, 'https://translation.googleapis.com/language/translate/v2', [
                 'query' => ['key' => $this->apiKey],
