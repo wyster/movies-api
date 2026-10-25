@@ -10,5 +10,6 @@ class TranslationDto
         public readonly int $id,
         public readonly string $title,
         public readonly bool $isDirector = false,
+        public readonly ?string $lang = null,
     ) {}
 }

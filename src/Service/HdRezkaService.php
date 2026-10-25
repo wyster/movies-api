@@ -26,6 +26,10 @@ class HdRezkaService
 {
     private readonly HttpClientInterface $httpClient;
 
+    private const array COUNTRY_TO_LANGUAGE = [
+        'UA' => 'uk',
+    ];
+
     public function __construct(
         HttpClientInterface $httpClient,
         private readonly CacheInterface $cache,
@@ -126,13 +130,15 @@ class HdRezkaService
                 $translatorsList->each(function (Crawler $item) use (&$translators) {
                     $text = $item->text();
                     $img = $item->filter('img');
+                    $countryCode = null;
                     if ((bool) $img->count()) {
-                        $text .= ' (' . $img->attr('title') . ')';
+                        $countryCode = strtoupper(pathinfo((string)parse_url((string)$img->attr('src'), PHP_URL_PATH), PATHINFO_FILENAME));
                     }
                     $translators[] = new TranslationDto(
                         (int) $item->attr('data-translator_id'),
                         $text,
                         (bool) $item->attr('data-director'),
+                        self::COUNTRY_TO_LANGUAGE[$countryCode] ?? null,
                     );
                 });
             }
