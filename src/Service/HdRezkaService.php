@@ -12,6 +12,7 @@ use App\Dto\SeasonDto;
 use App\Dto\SerialEpisodesDto;
 use App\Dto\TranslationDto;
 use App\Helper\HdRezkaHelper;
+use App\Helper\SentryHelper;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\Retry\GenericRetryStrategy;
@@ -63,7 +64,8 @@ class HdRezkaService
         ];
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time() - 1, $options);
         /** @var array{success: bool, message?: string, url?: string} $data */
-        $data = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $data = $response->toArray();
+        SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
             throw new \RuntimeException($data['message'] ?? 'Unknown error');
         }
@@ -87,7 +89,8 @@ class HdRezkaService
         }
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), $options);
         /** @var array{success: bool, message?: string, url?: string} $data */
-        $data = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $data = $response->toArray();
+        SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
             throw new \RuntimeException($data['message'] ?? 'Unknown error');
         }
