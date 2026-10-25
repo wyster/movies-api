@@ -1,0 +1,16 @@
+# Build dependencies are installed inside the image.
+/vendor/
+
+# Generated runtime and development files.
+/var/
+/.git/
+/.idea/
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/.phpunit.result.cache
+/*.log
+/*.pid
+
+# Tests and fixtures are only used outside the production image.
+/tests/
+/phpunit.xml.dist
