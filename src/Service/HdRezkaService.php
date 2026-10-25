@@ -63,14 +63,18 @@ class HdRezkaService
             ],
         ];
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time() - 1, $options);
-        /** @var array{success: bool, message?: string, url?: string} $data */
+        /** @var array{success: bool, message?: string, url?: mixed} $data */
         $data = $response->toArray();
         SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
             throw new \RuntimeException($data['message'] ?? 'Unknown error');
         }
+        $url = $data['url'] ?? throw new \RuntimeException('Url is empty or undefined');
+        if (!is_string($url)) {
+            throw new \RuntimeException('Url is not a string');
+        }
 
-        return new MoviePlayerDto(HdRezkaHelper::parseStreams($data['url'] ?? throw new \RuntimeException('Url is empty or undefined')));
+        return new MoviePlayerDto(HdRezkaHelper::parseStreams($url));
     }
 
     public function getSerialPlayer(int $id, int $translatorId, int $season, int $episode): MoviePlayerDto
@@ -95,7 +99,12 @@ class HdRezkaService
             throw new \RuntimeException($data['message'] ?? 'Unknown error');
         }
 
-        return new MoviePlayerDto(HdRezkaHelper::parseStreams($data['url'] ?? throw new \RuntimeException('Url is empty or undefined')));
+        $url = $data['url'] ?? throw new \RuntimeException('Url is empty or undefined');
+        if (!is_string($url)) {
+            throw new \RuntimeException('Url is not a string');
+        }
+
+        return new MoviePlayerDto(HdRezkaHelper::parseStreams($url));
     }
 
     public static function getIdFromUrl(string $url): ?int
