@@ -7,12 +7,18 @@ namespace App\Tests\Service;
 use App\Service\TranslateService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class TranslateServiceTest extends TestCase
 {
+    private function createTranslateService(MockHttpClient $httpClient, ?string $apiKey = null): TranslateService
+    {
+        return new TranslateService($httpClient, new ArrayAdapter(), $apiKey);
+    }
+
     #[DataProvider('translationBypassDataProvider')]
     public function testTranslateReturnsOriginalTextWithoutMakingARequest(string $text, ?string $apiKey): void
     {
@@ -20,7 +26,7 @@ final class TranslateServiceTest extends TestCase
             self::fail('The translation API should not be called.');
         });
 
-        static::assertSame($text, (new TranslateService($httpClient, $apiKey))->translate($text));
+        static::assertSame($text, $this->createTranslateService($httpClient, $apiKey)->translate($text));
     }
 
     /**
@@ -44,7 +50,7 @@ final class TranslateServiceTest extends TestCase
             return new MockResponse('{"data":{"translations":[{"translatedText":"Привіт світе"}]}}');
         });
 
-        static::assertSame('Привіт світе', (new TranslateService($httpClient, 'api-key'))->translate('Hello world'));
+        static::assertSame('Привіт світе', $this->createTranslateService($httpClient, 'api-key')->translate('Hello world'));
         static::assertSame('POST', $request[0]);
         static::assertSame('https://translation.googleapis.com/language/translate/v2?key=api-key', $request[1]);
         static::assertSame(['key' => 'api-key'], $request[2]['query'] ?? []);
@@ -61,7 +67,7 @@ final class TranslateServiceTest extends TestCase
     {
         $httpClient = new MockHttpClient($response);
 
-        static::assertSame('Hello', (new TranslateService($httpClient, 'api-key'))->translate('Hello'));
+        static::assertSame('Hello', $this->createTranslateService($httpClient, 'api-key')->translate('Hello'));
     }
 
     /**

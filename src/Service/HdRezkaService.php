@@ -65,7 +65,7 @@ class HdRezkaService
             ],
         ];
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time() - 1, $options);
-        /** @var array{success: bool, message?: string, url?: mixed} $data */
+        /** @var array{success: bool, message?: string, url?: mixed, subtitle?: string} $data */
         $data = $response->toArray();
         SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
@@ -78,10 +78,10 @@ class HdRezkaService
 
         $subtitles = [];
         if (array_key_exists('subtitle', $data)) {
-            $subtitles = array_map(static fn (array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
+            $subtitles = array_map(static fn(array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
         }
 
-        $streams = array_map(static fn (array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
+        $streams = array_map(static fn(array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
 
         return new MoviePlayerDto($streams, $subtitles);
     }
@@ -101,7 +101,7 @@ class HdRezkaService
             $options['proxy'] = $this->proxy;
         }
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), $options);
-        /** @var array{success: bool, message?: string, url?: string} $data */
+        /** @var array{success: bool, message?: string, url?: mixed, subtitle?: string} $data */
         $data = $response->toArray();
         SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
@@ -115,10 +115,10 @@ class HdRezkaService
 
         $subtitles = [];
         if (array_key_exists('subtitle', $data)) {
-            $subtitles = array_map(static fn (array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
+            $subtitles = array_map(static fn(array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
         }
 
-        $streams = array_map(static fn (array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
+        $streams = array_map(static fn(array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
 
         return new MoviePlayerDto($streams, $subtitles);
     }
@@ -160,7 +160,7 @@ class HdRezkaService
                     $img = $item->filter('img');
                     $countryCode = null;
                     if ((bool) $img->count()) {
-                        $countryCode = strtoupper(pathinfo((string)parse_url((string)$img->attr('src'), PHP_URL_PATH), PATHINFO_FILENAME));
+                        $countryCode = strtoupper(pathinfo((string) parse_url((string) $img->attr('src'), PHP_URL_PATH), PATHINFO_FILENAME));
                     }
                     $translators[] = new TranslationDto(
                         (int) $item->attr('data-translator_id'),
