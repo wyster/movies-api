@@ -56,52 +56,32 @@ class HdRezkaService
 
     public function getMoviePlayer(int $id, int $translatorId, bool $isDirector): MoviePlayerDto
     {
-        $options = [
-            'body' => [
-                'id' => $id,
-                'translator_id' => $translatorId,
-                'action' => 'get_movie',
-                'is_director' => $isDirector ? 1 : 0,
-            ],
-        ];
-        $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time() - 1, $options);
-        /** @var array{success: bool, message?: string, url?: mixed, subtitle?: string} $data */
-        $data = $response->toArray();
-        SentryHelper::configureExtraDetails(['responseData' => $data]);
-        if (false === $data['success']) {
-            throw new \RuntimeException($data['message'] ?? 'Unknown error');
-        }
-        $url = $data['url'] ?? throw new \RuntimeException('Url is empty or undefined');
-        if (!is_string($url)) {
-            throw new \RuntimeException('Url is not a string');
-        }
-
-        $subtitles = [];
-        if (array_key_exists('subtitle', $data)) {
-            $subtitles = array_map(static fn(array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
-        }
-
-        $streams = array_map(static fn(array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
-
-        return new MoviePlayerDto($streams, $subtitles);
+        return $this->getPlayer($id, $translatorId, 'get_movie', [
+            'is_director' => $isDirector ? 1 : 0,
+        ]);
     }
 
     public function getSerialPlayer(int $id, int $translatorId, int $season, int $episode): MoviePlayerDto
+    {
+        return $this->getPlayer($id, $translatorId, 'get_stream', [
+            'episode' => $episode,
+            'season' => $season,
+        ]);
+    }
+
+    /** @param array<string, mixed> $extraBody */
+    private function getPlayer(int $id, int $translatorId, string $action, array $extraBody): MoviePlayerDto
     {
         $options = [
             'body' => [
                 'id' => $id,
                 'translator_id' => $translatorId,
-                'action' => 'get_stream',
-                'episode' => $episode,
-                'season' => $season,
-            ],
+                'action' => $action,
+            ] + $extraBody,
         ];
-        if ((bool) $this->proxy) {
-            $options['proxy'] = $this->proxy;
-        }
+
         $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), $options);
-        /** @var array{success: bool, message?: string, url?: mixed, subtitle?: string} $data */
+        /** @var array{success: bool, message?: string, url?: mixed, subtitle?: mixed} $data */
         $data = $response->toArray();
         SentryHelper::configureExtraDetails(['responseData' => $data]);
         if (false === $data['success']) {
@@ -114,7 +94,7 @@ class HdRezkaService
         }
 
         $subtitles = [];
-        if (array_key_exists('subtitle', $data)) {
+        if (isset($data['subtitle']) && is_string($data['subtitle'])) {
             $subtitles = array_map(static fn(array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
         }
 
