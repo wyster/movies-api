@@ -167,4 +167,18 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertCount(1, $result->translators);
         static::assertSame(0, $result->translators[0]->id);
     }
+
+    public function testGetMoviePlayer(): void
+    {
+        $this->httpClient->setResponseFactory([
+            new MockResponse((string) file_get_contents(__DIR__ . '/fixtures/player_details_success.json')),
+        ]);
+        $result = $this->createHdRezkaService()->getMoviePlayer(57233, 358, false);
+        self::assertNotEmpty($result->streams);
+        self::assertCount(4, $result->streams);
+        self::assertNotEmpty($result->subtitles);
+        self::assertArrayHasKey(0, $result->subtitles);
+        self::assertSame('Українська', $result->subtitles[0]->lang);
+        self::assertSame('https://static.voidboost.com/view/C3jcdlo_XvkiD497Wz7A0w/1793605962/1/0/5/1/7/6/4/lqv0hnfje0nt.vtt', $result->subtitles[0]->url);
+    }
 }

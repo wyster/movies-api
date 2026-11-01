@@ -7,6 +7,8 @@ namespace App\Service;
 use App\Dto\DetailsDto;
 use App\Dto\EpisodeDto;
 use App\Dto\MoviePlayerDto;
+use App\Dto\MovieStreamDto;
+use App\Dto\MovieSubtitleDto;
 use App\Dto\SearchResultDto;
 use App\Dto\SeasonDto;
 use App\Dto\SerialEpisodesDto;
@@ -74,7 +76,14 @@ class HdRezkaService
             throw new \RuntimeException('Url is not a string');
         }
 
-        return new MoviePlayerDto(HdRezkaHelper::parseStreams($url));
+        $subtitles = [];
+        if (array_key_exists('subtitle', $data)) {
+            $subtitles = array_map(static fn (array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
+        }
+
+        $streams = array_map(static fn (array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
+
+        return new MoviePlayerDto($streams, $subtitles);
     }
 
     public function getSerialPlayer(int $id, int $translatorId, int $season, int $episode): MoviePlayerDto
@@ -104,7 +113,14 @@ class HdRezkaService
             throw new \RuntimeException('Url is not a string');
         }
 
-        return new MoviePlayerDto(HdRezkaHelper::parseStreams($url));
+        $subtitles = [];
+        if (array_key_exists('subtitle', $data)) {
+            $subtitles = array_map(static fn (array $subtitle): MovieSubtitleDto => new MovieSubtitleDto($subtitle['lang'], $subtitle['url']), HdRezkaHelper::parseSubtitles($data['subtitle']));
+        }
+
+        $streams = array_map(static fn (array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
+
+        return new MoviePlayerDto($streams, $subtitles);
     }
 
     public static function getIdFromUrl(string $url): ?int

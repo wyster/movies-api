@@ -27,4 +27,25 @@ class HdRezkaHelper
 
         return $result;
     }
+
+    /**
+     * @return array<int, array{lang: string, url: string}>
+     */
+    public static function parseSubtitles(string $subtitles): array
+    {
+        $pattern = '/\[([^\]]+)\]\s*(https?:\/\/[^,\s]+)/u';
+
+        preg_match_all($pattern, $subtitles, $matches, PREG_SET_ORDER);
+
+        $result = [];
+
+        foreach ($matches as $m) {
+            $result[] = [
+                'lang' => trim($m[1]),
+                'url' => $m[2],
+            ];
+        }
+
+        return $result;
+    }
 }
