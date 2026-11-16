@@ -27,7 +27,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class HdRezkaService
 {
+    private const string COOKIES_CACHE_KEY = 'hdrezka_api_cookies';
     private readonly HttpClientInterface $httpClient;
+    private readonly ?string $cookies;
 
     private const array COUNTRY_TO_LANGUAGE = [
         'UA' => 'uk',
@@ -40,8 +42,9 @@ class HdRezkaService
         private readonly string $hdrezkaUrl,
         private readonly ?string $proxy = null,
         #[Autowire(env: 'HDREZKA_COOKIES')]
-        private readonly ?string $cookies = null,
+        ?string $cookies = null,
     ) {
+        $this->cookies = $cookies;
         $options = [
             'base_uri' => $this->hdrezkaUrl,
             'timeout' => 10,
@@ -80,7 +83,7 @@ class HdRezkaService
             ] + $extraBody,
         ];
 
-        $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), $options);
+        $response = $this->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), $options);
         /** @var array{success: bool, message?: string, url?: mixed, subtitle?: mixed} $data */
         $data = $response->toArray();
         SentryHelper::configureExtraDetails(['responseData' => $data]);
@@ -117,11 +120,12 @@ class HdRezkaService
 
     public function getDetails(int $id): DetailsDto
     {
-        $content = $this->cache->get('hdrezka_' . $id . ((bool) $this->cookies ? md5($this->cookies) : ''), function (ItemInterface $cacheItem) use ($id): string {
+        $cookies = $this->resolveCookies();
+        $content = $this->cache->get('hdrezka_' . $id . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($id, $cookies): string {
             $options = [
                 'timeout' => 20,
             ];
-            $response = $this->httpClient->request(Request::METHOD_GET, "/{$id}-page.html", $options);
+            $response = $this->request(Request::METHOD_GET, "/{$id}-page.html", $options, $cookies);
             $cacheItem->set($response->getContent());
             $cacheItem->expiresAt((new \DateTime())->add(new \DateInterval('P1D')));
 
@@ -212,7 +216,7 @@ class HdRezkaService
 
     public function getSeries(int $id, int $translatorId): SerialEpisodesDto
     {
-        $response = $this->httpClient->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), [
+        $response = $this->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), [
             'body' => [
                 'id' => $id,
                 'translator_id' => $translatorId,
@@ -247,8 +251,9 @@ class HdRezkaService
      */
     public function search(string $q): array
     {
-        $content = $this->cache->get('hdrezka_search' . $q, function (ItemInterface $cacheItem) use ($q): string {
-            $response = $this->httpClient->request(Request::METHOD_POST, '/engine/ajax/search.php', [
+        $cookies = $this->resolveCookies();
+        $content = $this->cache->get('hdrezka_search' . $q . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($q, $cookies): string {
+            $response = $this->request(Request::METHOD_POST, '/engine/ajax/search.php', [
                 'query' => [
                     'q' => $q,
                 ],
@@ -285,5 +290,32 @@ class HdRezkaService
         });
 
         return $results;
+    }
+
+    public function saveCookies(string $cookies): void
+    {
+        $this->cache->delete(self::COOKIES_CACHE_KEY);
+        $this->cache->get(self::COOKIES_CACHE_KEY, static function (ItemInterface $item) use ($cookies): string {
+            $item->set($cookies);
+            $item->expiresAt((new \DateTime())->add(new \DateInterval('P30D')));
+
+            return $cookies;
+        });
+    }
+
+    private function resolveCookies(): ?string
+    {
+        return $this->cache->get(self::COOKIES_CACHE_KEY, fn (): ?string => $this->cookies);
+    }
+
+    /** @param array<string, mixed> $options */
+    private function request(string $method, string $url, array $options): \Symfony\Contracts\HttpClient\ResponseInterface
+    {
+        $cookies = $this->resolveCookies();
+        if (null !== $cookies) {
+            $options['headers']['Cookie'] = $cookies;
+        }
+
+        return $this->httpClient->request($method, $url, $options);
     }
 }

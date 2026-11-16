@@ -4,7 +4,7 @@ FROM php:${PHP_VERSION}-fpm
 
 ARG WITH_XDEBUG=false
 
-RUN apt-get update && apt-get install -y git zip supervisor cron procps
+RUN apt-get update && apt-get install -y git zip supervisor cron procps unzip
 
 # intl
 RUN apt-get install -y zlib1g-dev libicu-dev g++

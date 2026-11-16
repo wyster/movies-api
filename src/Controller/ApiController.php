@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Dto\DetailsDto;
 use App\Dto\MoviePlayerDto;
 use App\Dto\SearchResultDto;
+use App\Dto\SetCookiesDto;
 use App\Dto\SerialEpisodesDto;
 use App\Service\HdRezkaService;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[OA\Tag(name: 'API')]
@@ -142,5 +144,13 @@ class ApiController extends AbstractController
         HdRezkaService $hdRezkaService,
     ): JsonResponse {
         return $this->json($hdRezkaService->search($q));
+    }
+
+    #[Route('/cookies', name: 'api_cookies', methods: [Request::METHOD_POST])]
+    public function setCookies(#[MapRequestPayload] SetCookiesDto $payload, HdRezkaService $hdRezkaService): JsonResponse
+    {
+        $hdRezkaService->saveCookies($payload->cookies);
+
+        return $this->json([]);
     }
 }
