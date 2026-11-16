@@ -24,6 +24,7 @@ use Symfony\Component\String\UnicodeString;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class HdRezkaService
 {
@@ -40,7 +41,6 @@ class HdRezkaService
         private readonly CacheInterface $cache,
         #[Autowire(env: 'HDREZKA_URL')]
         private readonly string $hdrezkaUrl,
-        private readonly ?string $proxy = null,
         #[Autowire(env: 'HDREZKA_COOKIES')]
         ?string $cookies = null,
     ) {
@@ -121,11 +121,11 @@ class HdRezkaService
     public function getDetails(int $id): DetailsDto
     {
         $cookies = $this->resolveCookies();
-        $content = $this->cache->get('hdrezka_' . $id . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($id, $cookies): string {
+        $content = $this->cache->get('hdrezka_' . $id . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($id): string {
             $options = [
                 'timeout' => 20,
             ];
-            $response = $this->request(Request::METHOD_GET, "/{$id}-page.html", $options, $cookies);
+            $response = $this->request(Request::METHOD_GET, "/{$id}-page.html", $options);
             $cacheItem->set($response->getContent());
             $cacheItem->expiresAt((new \DateTime())->add(new \DateInterval('P1D')));
 
@@ -252,7 +252,7 @@ class HdRezkaService
     public function search(string $q): array
     {
         $cookies = $this->resolveCookies();
-        $content = $this->cache->get('hdrezka_search' . $q . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($q, $cookies): string {
+        $content = $this->cache->get('hdrezka_search' . $q . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($q): string {
             $response = $this->request(Request::METHOD_POST, '/engine/ajax/search.php', [
                 'query' => [
                     'q' => $q,
@@ -305,14 +305,15 @@ class HdRezkaService
 
     private function resolveCookies(): ?string
     {
-        return $this->cache->get(self::COOKIES_CACHE_KEY, fn (): ?string => $this->cookies);
+        return $this->cache->get(self::COOKIES_CACHE_KEY, fn(): ?string => $this->cookies);
     }
 
-    /** @param array<string, mixed> $options */
-    private function request(string $method, string $url, array $options): \Symfony\Contracts\HttpClient\ResponseInterface
+    /** @param array{headers?: array<string, string>, ...<string, mixed>} $options */
+    private function request(string $method, string $url, array $options): ResponseInterface
     {
         $cookies = $this->resolveCookies();
         if (null !== $cookies) {
+            $options['headers'] ??= [];
             $options['headers']['Cookie'] = $cookies;
         }
 
