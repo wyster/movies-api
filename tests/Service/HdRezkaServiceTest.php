@@ -134,6 +134,12 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertSame('Огромное семейство Маккалистеров собирается отправиться на Рождественские праздники в Париж. Как обычно это бывает, с утра оказывается, что они проспали, и все впопыхах начинают собираться. Им с большим трудом удается успеть на самолет, и когда тот уже взлетает, мать и отец восьмилетнего Кевина вспоминают, что они забыли своего младшего сына дома. В это время юный Кевин, осознав, что он остался дома сам, решает не тратить времени зря и как следует повеселиться. В то время, как его мать не находит себе места и ищет способ вернуться домой, мальчишка делает все, что его душе угодно. Однако в скором времени Кевин узнает, что парочка бандитов хочет ограбить его дом. Грабители даже не догадываются с чем им придется столкнуться, ведь мальчик как следует подготовился к их приходу.', $result->description);
         static::assertSame(1990, $result->year);
         static::assertSame('tt0099785', $result->imdbId);
+        static::assertCount(6, $result->relatedContent);
+        static::assertSame('Один дома', $result->relatedContent[0]->title);
+        static::assertSame('2021', $result->relatedContent[0]->year);
+        static::assertSame(43016, $result->relatedContent[0]->id);
+        static::assertSame('Один дома', $result->relatedContent[5]->title);
+        static::assertSame(833, $result->relatedContent[5]->id);
     }
 
     public function testMovieDetailsSuccess2(): void
@@ -148,6 +154,11 @@ class HdRezkaServiceTest extends KernelTestCase
         static::assertSame('https://static.hdrezka.ac/i/2026/3/13/k86eb2a4fd89bik31b12p.jpg', $result->poster);
         static::assertSame('История борьбы Миранды Пристли с Эмили Чарлтон, ее бывшей помощницей, ставшей соперницей-исполнительным директором, поскольку они конкурируют за доходы от рекламы в условиях упадка печатных СМИ, в то время как Миранда близится к выходу на пенсию.', $result->description);
         static::assertSame(2026, $result->year);
+        static::assertCount(2, $result->relatedContent);
+        static::assertSame('Дьявол носит Prada 2', $result->relatedContent[0]->title);
+        static::assertSame(83735, $result->relatedContent[0]->id);
+        static::assertSame('Дьявол носит Prada', $result->relatedContent[1]->title);
+        static::assertSame(4264, $result->relatedContent[1]->id);
     }
 
     public function testMovieDetailsSuccess3(): void

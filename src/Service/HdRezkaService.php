@@ -9,6 +9,7 @@ use App\Dto\EpisodeDto;
 use App\Dto\MoviePlayerDto;
 use App\Dto\MovieStreamDto;
 use App\Dto\MovieSubtitleDto;
+use App\Dto\RelatedContentDto;
 use App\Dto\SearchResultDto;
 use App\Dto\SeasonDto;
 use App\Dto\SerialEpisodesDto;
@@ -214,6 +215,33 @@ class HdRezkaService
             }
         }
 
+        $relatedContent = [];
+        $dom->filter('.b-post__partcontent_item')->each(static function (Crawler $item) use (&$relatedContent, $id): void {
+            $titleNode = $item->filter('.td.title');
+            $title = trim($titleNode->text(''));
+            $number = trim($item->filter('.td.num')->text(''));
+            if ('' === $title || !ctype_digit($number)) {
+                return;
+            }
+
+            $url = $item->attr('data-url');
+            if (null === $url) {
+                $link = $titleNode->filter('a');
+                $url = $link->count() > 0 ? $link->attr('href') : null;
+            }
+            $yearText = trim($item->filter('.td.year')->text(''));
+            $relatedId = $item->matches('.current') ? $id : (null === $url ? null : self::getIdFromUrl($url));
+            if (null === $relatedId) {
+                return;
+            }
+
+            $relatedContent[] = new RelatedContentDto(
+                $relatedId,
+                $title,
+                1 === preg_match('/\d{4}/', $yearText, $yearMatch) ? $yearMatch[0] : null,
+            );
+        });
+
         return new DetailsDto(
             $isSerial,
             $dom->filter('.b-post__title')->text(),
@@ -223,6 +251,8 @@ class HdRezkaService
             $dom->filter('.b-post__origtitle')->count() > 0 ? $dom->filter('.b-post__origtitle')->text() : null,
             $year,
             $imdbId,
+            null,
+            $relatedContent,
         );
     }
 

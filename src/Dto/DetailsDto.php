@@ -26,5 +26,7 @@ class DetailsDto
         public readonly ?int $year = null,
         public readonly ?string $imdbId = null,
         public ?TmdbMovieDetailsDto $tmdb = null,
+        /** @var list<RelatedContentDto> */
+        public readonly array $relatedContent = [],
     ) {}
 }
