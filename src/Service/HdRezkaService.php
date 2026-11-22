@@ -208,8 +208,8 @@ class HdRezkaService
         if ($imdbLink->count() > 0) {
             $path = (string) parse_url((string) $imdbLink->attr('href'), PHP_URL_PATH);
             $encodedUrl = trim(basename(rtrim($path, '/')));
-            $decodedUrl = urldecode(base64_decode($encodedUrl, true));
-            if (is_string($decodedUrl) && (bool) preg_match('~imdb\.com/title/(tt[0-9]+)~i', $decodedUrl, $matches)) {
+            $decodedUrl = urldecode((string) base64_decode($encodedUrl, true));
+            if ((bool) preg_match('~imdb\.com/title/(tt[0-9]+)~i', $decodedUrl, $matches)) {
                 $imdbId = $matches[1];
             }
         }

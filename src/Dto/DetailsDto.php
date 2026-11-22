@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Dto\TmdbMovieDetailsDto;
+
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
@@ -25,5 +27,6 @@ class DetailsDto
         public readonly ?string $originalName,
         public readonly ?int $year = null,
         public readonly ?string $imdbId = null,
+        public ?TmdbMovieDetailsDto $tmdb = null,
     ) {}
 }

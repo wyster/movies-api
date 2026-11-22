@@ -10,6 +10,7 @@ use App\Dto\SearchResultDto;
 use App\Dto\SetCookiesDto;
 use App\Dto\SerialEpisodesDto;
 use App\Service\HdRezkaService;
+use App\Service\TmdbService;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -102,9 +103,15 @@ class ApiController extends AbstractController
         #[MapQueryParameter]
         int $id,
         HdRezkaService $hdRezkaService,
+        TmdbService $tmdbService,
     ): JsonResponse {
+        $details = $hdRezkaService->getDetails($id);
+        if (null !== $details->imdbId) {
+            $details->tmdb = $tmdbService->findByImdbId($details->imdbId, 'uk-UA');
+        }
+
         return $this->json(
-            $hdRezkaService->getDetails($id),
+            $details,
         );
     }
 
