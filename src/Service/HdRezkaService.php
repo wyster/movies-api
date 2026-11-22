@@ -51,7 +51,6 @@ class HdRezkaService
             'timeout' => 10,
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-                'Cookie' => $this->cookies,
             ],
         ];
         $strategy = new GenericRetryStrategy([0, 500]);
@@ -127,8 +126,7 @@ class HdRezkaService
 
     public function getDetails(int $id): DetailsDto
     {
-        $cookies = $this->resolveCookies();
-        $content = $this->cache->get('hdrezka_' . $id . ((bool) $cookies ? md5($cookies) : ''), function (ItemInterface $cacheItem) use ($id): string {
+        $content = $this->cache->get('hdrezka_' . $id, function (ItemInterface $cacheItem) use ($id): string {
             $options = [
                 'timeout' => 20,
             ];
@@ -136,7 +134,12 @@ class HdRezkaService
             $cacheItem->set($response->getContent());
             $cacheItem->expiresAt((new \DateTime())->add(new \DateInterval('P1D')));
 
-            return $response->getContent();
+            $content = $response->getContent();
+
+            $dom = new Crawler($content);
+            $dom->filter('.b-post__title')->text(); // validate response
+
+            return $content;
         });
 
         $dom = new Crawler($content);
