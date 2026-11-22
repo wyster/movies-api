@@ -203,6 +203,17 @@ class HdRezkaService
             // ignore
         }
 
+        $imdbId = null;
+        $imdbLink = $dom->filter('span.b-post__info_rates.imdb a');
+        if ($imdbLink->count() > 0) {
+            $path = (string) parse_url((string) $imdbLink->attr('href'), PHP_URL_PATH);
+            $encodedUrl = trim(basename(rtrim($path, '/')));
+            $decodedUrl = urldecode(base64_decode($encodedUrl, true));
+            if (is_string($decodedUrl) && (bool) preg_match('~imdb\.com/title/(tt[0-9]+)~i', $decodedUrl, $matches)) {
+                $imdbId = $matches[1];
+            }
+        }
+
         return new DetailsDto(
             $isSerial,
             $dom->filter('.b-post__title')->text(),
@@ -211,6 +222,7 @@ class HdRezkaService
             $description,
             $dom->filter('.b-post__origtitle')->count() > 0 ? $dom->filter('.b-post__origtitle')->text() : null,
             $year,
+            $imdbId,
         );
     }
 
