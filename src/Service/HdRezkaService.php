@@ -76,6 +76,11 @@ class HdRezkaService
     /** @param array<string, mixed> $extraBody */
     private function getPlayer(int $id, int $translatorId, string $action, array $extraBody): MoviePlayerDto
     {
+        $cacheKey = 'hdrezka_player_' . hash('sha256', json_encode([$id, $translatorId, $action, $extraBody], JSON_THROW_ON_ERROR));
+
+        return $this->cache->get($cacheKey, function (ItemInterface $cacheItem) use ($id, $translatorId, $action, $extraBody): MoviePlayerDto {
+            $cacheItem->expiresAfter(3600);
+
         $options = [
             'body' => [
                 'id' => $id,
@@ -104,7 +109,8 @@ class HdRezkaService
 
         $streams = array_map(static fn(array $stream): MovieStreamDto => new MovieStreamDto($stream['quality'], $stream['playlist'], $stream['video']), HdRezkaHelper::parseStreams($url));
 
-        return new MoviePlayerDto($streams, $subtitles);
+            return new MoviePlayerDto($streams, $subtitles);
+        });
     }
 
     public static function getIdFromUrl(string $url): ?int
@@ -258,6 +264,9 @@ class HdRezkaService
 
     public function getSeries(int $id, int $translatorId): SerialEpisodesDto
     {
+        return $this->cache->get('hdrezka_series_' . $id . '_' . $translatorId, function (ItemInterface $cacheItem) use ($id, $translatorId): SerialEpisodesDto {
+            $cacheItem->expiresAfter(3600);
+
         $response = $this->request(Request::METHOD_POST, '/ajax/get_cdn_series/?t=' . time(), [
             'body' => [
                 'id' => $id,
@@ -285,7 +294,8 @@ class HdRezkaService
             );
         }
 
-        return new SerialEpisodesDto($seasons, $episodes);
+            return new SerialEpisodesDto($seasons, $episodes);
+        });
     }
 
     /**
