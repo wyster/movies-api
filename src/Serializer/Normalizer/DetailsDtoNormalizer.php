@@ -25,11 +25,13 @@ final class DetailsDtoNormalizer implements NormalizerInterface
 
         $data['name'] = $this->translateService->translate($object->name);
         $data['description'] = $this->translateService->translate($object->description);
-        if ($tmdb = $data['tmdb']) {
+        $tmdb = $data['tmdb'] ?? null;
+        if (is_array($tmdb)) {
+            /** @var array{overview?: string|null, posterPath?: string|null, title?: string|null} $tmdb */
             $data = array_merge($data, [
-                'description' => $tmdb['overview'],
-                'poster' => $tmdb['posterPath'],
-                'name' => $tmdb['title']
+                'description' => $tmdb['overview'] ?? null,
+                'poster' => $tmdb['posterPath'] ?? null,
+                'name' => $tmdb['title'] ?? null,
             ]);
         }
 

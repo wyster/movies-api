@@ -146,7 +146,6 @@ class TmdbServiceTest extends TestCase
         $results = (new TmdbService($client, new ArrayAdapter(), 'test-key'))->searchMovies('Futurama', 'uk-UA', 2);
 
         static::assertCount(1, $results);
-        static::assertInstanceOf(TmdbMovieDetailsDto::class, $results[0]);
         static::assertSame(123, $results[0]->id);
         static::assertSame('Футурама', $results[0]->title);
         static::assertSame('Futurama', $results[0]->originalTitle);

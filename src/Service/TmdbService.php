@@ -22,7 +22,7 @@ final class TmdbService
 
     public function findByImdbId(string $imdbId, string $language = 'en-US'): ?TmdbMovieDetailsDto
     {
-        if ('' === trim((string) $this->apiKey) || !preg_match('/^tt\d+$/', $imdbId)) {
+        if ('' === trim((string) $this->apiKey) || !(bool) preg_match('/^tt\d+$/', $imdbId)) {
             return null;
         }
 
@@ -44,7 +44,9 @@ final class TmdbService
             ],
         ]);
 
+        /** @var array{movie_results?: list<array{id?: int, title?: string, original_title?: string, overview?: string, release_date?: string, poster_path?: string, backdrop_path?: string, vote_average?: float|int}>} $data */
         $data = $response->toArray();
+        $movieResults = $data['movie_results'] ?? [];
 
         return array_values(array_filter(array_map(static function (array $movie): ?TmdbMovieDetailsDto {
             if (!isset($movie['id'], $movie['title'], $movie['original_title'])) {
@@ -62,7 +64,7 @@ final class TmdbService
                 (float) ($movie['vote_average'] ?? 0),
                 [],
             );
-        }, $data['movie_results'] ?? [])))[0];
+        }, $movieResults)))[0] ?? null;
     }
 
     public function getMovieDetails(int $movieId, string $language = 'en-US'): ?TmdbMovieDetailsDto
@@ -93,7 +95,10 @@ final class TmdbService
             $data['poster_path'] ?? null,
             $data['backdrop_path'] ?? null,
             (float) ($data['vote_average'] ?? 0),
-            array_values(array_filter(array_map(static fn(array $genre): ?string => $genre['name'] ?? null, $data['genres'] ?? []))),
+            array_values(array_filter(
+                array_map(static fn(array $genre): ?string => $genre['name'] ?? null, $data['genres'] ?? []),
+                static fn(?string $name): bool => null !== $name,
+            )),
         );
     }
 
