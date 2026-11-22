@@ -60,7 +60,7 @@ jobs:
     publish_latest:
         name: Publish latest image
         if: gitea.ref == 'refs/heads/master'
-        runs-on: ubuntu-latest
+        runs-on: raspberry-pi
         timeout-minutes: 10
         steps:
             -   name: Checkout
